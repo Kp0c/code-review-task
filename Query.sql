@@ -5,28 +5,28 @@
     GROUP BY EmployeeId
     HAVING MIN(Amount) >= 5000
 ),
-AvgSalariesEmployee AS (
+SumSalariesEmployee AS (
     SELECT 
         EligibleEmployee.Id,
-        AvgSalary = AVG(Amount)
+        SumSalary = SUM(Amount)
     FROM EligibleEmployee
     INNER JOIN Payments ON EligibleEmployee.Id = Payments.EmployeeId
     WHERE PaymentDate >= DATEADD(MONTH, -3, GETDATE())
     GROUP BY EligibleEmployee.Id
 ),
-EmployeeRankedAvgSalariesPerDepartment AS (
+EmployeeRankedSumSalariesPerDepartment AS (
     SELECT 
         DepartmentId,
-        AvgSalary,
+        SumSalary,
         Name,
-        [Rank] = DENSE_RANK() OVER (PARTITION BY DepartmentId ORDER BY AvgSalary DESC)
-    FROM AvgSalariesEmployee
-    INNER JOIN Employee ON Employee.Id = AvgSalariesEmployee.Id
+        [Rank] = DENSE_RANK() OVER (PARTITION BY DepartmentId ORDER BY SumSalary DESC)
+    FROM SumSalariesEmployee
+    INNER JOIN Employee ON Employee.Id = SumSalariesEmployee.Id
 )
 SELECT Department = Department.Name,
-       Employee = EmployeeRankedAvgSalariesPerDepartment.Name,
-       AvgSalary
-FROM EmployeeRankedAvgSalariesPerDepartment
-INNER JOIN Department ON EmployeeRankedAvgSalariesPerDepartment.DepartmentId = Department.Id
+       Employee = EmployeeRankedSumSalariesPerDepartment.Name,
+       SumSalary
+FROM EmployeeRankedSumSalariesPerDepartment
+INNER JOIN Department ON EmployeeRankedSumSalariesPerDepartment.DepartmentId = Department.Id
 WHERE [Rank] <= 3
-ORDER BY DepartmentId, AvgSalary DESC
+ORDER BY DepartmentId, SumSalary DESC

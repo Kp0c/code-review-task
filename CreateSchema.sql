@@ -26,4 +26,8 @@ BEGIN
         EmployeeId   INT NOT NULL FOREIGN KEY REFERENCES Employee(Id),
         PRIMARY KEY (Id)
     )
+    
+    CREATE NONCLUSTERED INDEX IX_Payments_PaymentDate
+    ON Payments (PaymentDate)
+    INCLUDE (Amount, EmployeeId)
 END
